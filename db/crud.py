@@ -5,6 +5,7 @@ from sqlalchemy import func, and_
 from . import schemas, decorators
 from .models import Book, ShopBooks, Shop, BookPrice
 
+
 @decorators.check_slug_book
 def get_book(db: Session, book_slug: str):
     q = db.query(Book).filter(Book.slug == book_slug)
@@ -53,9 +54,6 @@ def get_book_prices(db: Session, book_slug, last_prices):
         ).filter(BookPrice.book_slug == book_slug)
         return q.all()
     return _get_all_prices(db, book_slug).all()
-
-
-# db.query(models.BookPrice).filter(models.BookPrice.book_slug == book_slug).all()
 
 
 @decorators.check_slug_book
