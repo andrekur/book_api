@@ -24,10 +24,10 @@ class BookIn(_BookBase):
 
 
 class BookOut(_BookBase):
-    pass
+    id: int
 
 
-class Prices(BaseModel):
+class Price(BaseModel):
     id: int
     price: int
     discount_price: int
@@ -36,3 +36,18 @@ class Prices(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class _ShopBase(BaseModel):
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class ShopIn(_ShopBase):
+    pass
+
+
+class ShopOut(_ShopBase):
+    id: int

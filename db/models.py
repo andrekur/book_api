@@ -3,7 +3,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from .connector import Base
 
 
-class Book(Base):
+class BookModel(Base):
     __tablename__ = 'books'
 
     slug = Column(String, primary_key=True, index=True)
@@ -13,14 +13,14 @@ class Book(Base):
     size = Column(String)
 
 
-class Shop(Base):
+class ShopModel(Base):
     __tablename__ = 'shops'
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
 
 
-class ShopBooks(Base):
+class ShopBooksModel(Base):
     __tablename__ = 'shops_books'
 
     id = Column(Integer, primary_key=True)
@@ -29,7 +29,7 @@ class ShopBooks(Base):
     url = Column(String)
 
 
-class BookPrice(Base):
+class BookPriceModel(Base):
     __tablename__ = 'books_prices'
 
     id = Column(Integer, primary_key=True)
