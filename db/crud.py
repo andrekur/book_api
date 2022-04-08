@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 
 from . import schemas, decorators
-from .models import BookModel, ShopBooksModel, ShopModel, BookPriceModel
+from .models import BookModel, ShopModel, BookPriceModel, ShopBooksModel
 
 
 @decorators.check_slug_book
@@ -17,18 +17,12 @@ def get_books(db: Session):
 
 
 def create_book(db: Session, book: schemas.BookIn):
-    q_book = db.query(BookModel).filter(BookModel.slug == book.slug)
+    q = db.query(BookModel).filter(BookModel.slug == book.slug).exists()
+    if db.query(q).scalar():
+        raise HTTPException(status_code=404, detail='book already created')
 
-    if db.query(q_book.exists()):
-        raise HTTPException(status_code=400, detail='book already created')
-
-    if book.shop is not None and not _is_shop_by_id(db, book.shop.shop_id):
-        raise HTTPException(status_code=404, detail=f'shop id:{book.shop.shop_id} not found')
-
-    db_shop = ShopModel(**book.shop.dict())
     db_book = BookModel(**book.dict())
-
-    db.add(db_shop, db_book)
+    db.add(db_book)
     db.commit()
     return db_book
 
@@ -57,7 +51,7 @@ def get_book_prices(db: Session, book_slug, last_prices):
 
 
 @decorators.check_slug_book
-def create_book_prices(db: Session, book_slug: str, price: schemas.Price):
+def create_book_prices(db: Session, book_slug: str, price: schemas.PriceIn):
     if not _is_shop_by_id(db, price.shop_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'shop id:{price.shop_id} not found')
 
@@ -82,7 +76,7 @@ def get_shops(db: Session):
 
 
 def _is_shop_by_id(db: Session, shop_id: int):
-    q = db.query(ShopModel).filter(ShopModel.id == shop_id)
+    q = db.query(ShopModel).filter(ShopModel.id == shop_id).exists()
     return db.query(q).scalar()
 
 

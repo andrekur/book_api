@@ -4,15 +4,15 @@ from datetime import datetime
 
 
 class BookShop(BaseModel):
-    shop_id: int
+    id: int
     url: str
 
 
 class _BookBase(BaseModel):
     slug: str
     name: str
-    count_pages: str
-    weight: str
+    count_pages: int
+    weight: int
     size: str
 
     class Config:
@@ -20,22 +20,11 @@ class _BookBase(BaseModel):
 
 
 class BookIn(_BookBase):
-    shop: Optional[BookShop] = None
+    pass
 
 
 class BookOut(_BookBase):
-    id: int
-
-
-class Price(BaseModel):
-    id: int
-    price: int
-    discount_price: int
-    shop_id: int
-    date: datetime
-
-    class Config:
-        orm_mode = True
+    pass
 
 
 class _ShopBase(BaseModel):
@@ -50,4 +39,36 @@ class ShopIn(_ShopBase):
 
 
 class ShopOut(_ShopBase):
+    id: int
+
+
+class _BaseBookUrl(BaseModel):
+    id: int
+    url: str
+
+
+class BookUrlIn(_BaseBookUrl):
+    pass
+
+
+class BookUrlOut(_BaseBookUrl):
+    id: int
+
+
+class _BasePrice(BaseModel):
+
+    price: int
+    discount_price: int
+    shop_id: int
+    date: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class PriceIn(_BasePrice):
+    pass
+
+
+class PriceOut(_BasePrice):
     id: int
