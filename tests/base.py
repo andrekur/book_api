@@ -59,3 +59,14 @@ class BaseAPITest(TestCase):
         return self.client.get(
             '/books',
         )
+
+    def get_shop_books(self, book_slug):
+        return self.client.get(
+            f'/books/{book_slug}/urls',
+        )
+
+    def create_shop_books(self, book_slug, shop_book_data):
+        return self.client.post(
+            f'/books/{book_slug}/urls',
+            json={**shop_book_data}
+        )

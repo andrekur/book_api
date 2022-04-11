@@ -75,6 +75,34 @@ def get_shops(db: Session):
     return db.query(ShopModel).all()
 
 
+@decorators.check_slug_book
+def create_shop_book(db: Session, book_slug: str, shop_book: schemas.ShopBookIn):
+    if not _is_shop_by_id(db, shop_book.shop_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'shop id: {shop_book.shop_id} not found')
+
+    if _is_shop_book(db, book_slug, shop_book.shop_id):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'relation already created')
+
+    _shop_book = shop_book.dict()
+    _shop_book['book_slug'] = book_slug
+    db_shop_book = ShopBooksModel(**_shop_book)
+    db.add(db_shop_book)
+    db.commit()
+    print(db_shop_book)
+
+    return db_shop_book
+
+
+@decorators.check_slug_book
+def get_shop_books(db: Session, book_slug):
+    q = db.query(ShopBooksModel).filter(ShopBooksModel.book_slug == book_slug)
+    return q.all()
+
+
+def _get_all_prices(db: Session, book_slug):
+    return db.query(BookPriceModel).filter(BookPriceModel.book_slug == book_slug)
+
+
 def _is_shop_by_id(db: Session, shop_id: int):
     q = db.query(ShopModel).filter(ShopModel.id == shop_id).exists()
     return db.query(q).scalar()
@@ -85,5 +113,11 @@ def _is_shop_by_name(db: Session, shop_name: str):
     return db.query(q).scalar()
 
 
-def _get_all_prices(db: Session, book_slug):
-    return db.query(BookPriceModel).filter(BookPriceModel.book_slug == book_slug)
+def _is_shop_book(db: Session, book_slug, shop_id):
+    q = db.query(ShopBooksModel).filter(
+        and_(
+            ShopBooksModel.book_slug == book_slug,
+            ShopBooksModel.shop_id == shop_id)
+    ).exists()
+
+    return db.query(q).scalar()

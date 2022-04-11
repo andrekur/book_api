@@ -42,17 +42,21 @@ class ShopOut(_ShopBase):
     id: int
 
 
-class _BaseBookUrl(BaseModel):
-    id: int
+class _BaseShopBook(BaseModel):
+    shop_id: int
     url: str
 
+    class Config:
+        orm_mode = True
 
-class BookUrlIn(_BaseBookUrl):
+
+class ShopBookIn(_BaseShopBook):
     pass
 
 
-class BookUrlOut(_BaseBookUrl):
+class ShopBookOut(_BaseShopBook):
     id: int
+    book_slug: str
 
 
 class _BasePrice(BaseModel):

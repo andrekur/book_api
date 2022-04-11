@@ -1,7 +1,16 @@
 from typing import List
 from fastapi import Depends, status
 
-from db.schemas import BookIn, BookOut, PriceIn, PriceOut, ShopIn, ShopOut, BookUrlIn, BookUrlOut
+from db.schemas import (
+    BookIn,
+    BookOut,
+    PriceIn,
+    PriceOut,
+    ShopIn,
+    ShopOut,
+    ShopBookIn,
+    ShopBookOut
+)
 from db.connector import Session
 from db import crud
 
@@ -38,19 +47,19 @@ def create_book_price(book_slug: str, price: PriceIn, db: Session = Depends(get_
 @app.post(
     '/books/{book_slug}/urls',
     status_code=201,
-    response_model=BookUrlOut
+    response_model=ShopBookOut
 )
-def create_book_url(book_slug: str, book_url: BookUrlIn, db: Session = Depends(get_db)):
-    pass
+def create_shop_book(book_slug: str, shop_book: ShopBookIn, db: Session = Depends(get_db)):
+    return crud.create_shop_book(db, book_slug, shop_book)
 
 
 @app.get(
-    'books/{book_slug}/urls',
-    status_code=209,
-    response_model=BookUrlOut
+    '/books/{book_slug}/urls',
+    status_code=200,
+    response_model=List[ShopBookOut]
 )
-def get_book_urls(book_slug: str, db: Session = Depends(get_db)):
-    pass
+def get_shop_books(book_slug: str, db: Session = Depends(get_db)):
+    return crud.get_shop_books(db, book_slug)
 
 
 @app.get(
@@ -59,7 +68,6 @@ def get_book_urls(book_slug: str, db: Session = Depends(get_db)):
     response_model=BookOut
 )
 def get_book(book_slug: str, db: Session = Depends(get_db)):
-    print(book_slug)
     return crud.get_book(db, book_slug)
 
 
