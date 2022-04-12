@@ -1,34 +1,28 @@
-from fastapi import HTTPException
-from sqlalchemy.orm import Session, aliased
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 
 from . import schemas, decorators
-from .models import Book, ShopBooks, Shop, BookPrice
+from .models import BookModel, ShopModel, BookPriceModel, ShopBooksModel
 
 
 @decorators.check_slug_book
 def get_book(db: Session, book_slug: str):
-    q = db.query(Book).filter(Book.slug == book_slug)
+    q = db.query(BookModel).filter(BookModel.slug == book_slug)
     return q.first()
 
 
 def get_books(db: Session):
-    return db.query(Book).all()
+    return db.query(BookModel).all()
 
 
 def create_book(db: Session, book: schemas.BookIn):
-    q_book = db.query(Book).filter(Book.slug == book.slug)
+    q = db.query(BookModel).filter(BookModel.slug == book.slug).exists()
+    if db.query(q).scalar():
+        raise HTTPException(status_code=404, detail='book already created')
 
-    if db.query(q_book.exists()):
-        raise HTTPException(status_code=400, detail='book already created')
-
-    if book.shop is not None and not _is_shop(db, book.shop.shop_id):
-        raise HTTPException(status_code=404, detail=f'shop id:{book.shop.shop_id} not found')
-
-    db_shop = Shop(**book.shop.dict())
-    db_book = Book(**book.dict())
-
-    db.add(db_shop, db_book)
+    db_book = BookModel(**book.dict())
+    db.add(db_book)
     db.commit()
     return db_book
 
@@ -37,41 +31,92 @@ def create_book(db: Session, book: schemas.BookIn):
 def get_book_prices(db: Session, book_slug, last_prices):
     if last_prices:
         q = db.query(
-            BookPrice.book_slug,
-            BookPrice.shop_id,
-            func.max(BookPrice.date).label('date')
+            BookPriceModel.book_slug,
+            BookPriceModel.shop_id,
+            func.max(BookPriceModel.date).label('date')
         ).group_by(
-            BookPrice.shop_id,
-            BookPrice.book_slug
+            BookPriceModel.shop_id,
+            BookPriceModel.book_slug
         ).subquery()
 
-        q = db.query(BookPrice).select_from(q).join(
-            BookPrice, and_(
-                BookPrice.shop_id == q.c.shop_id,
-                BookPrice.book_slug == q.c.book_slug,
-                BookPrice.date == q.c.date
+        q = db.query(BookPriceModel).select_from(q).join(
+            BookPriceModel, and_(
+                BookPriceModel.shop_id == q.c.shop_id,
+                BookPriceModel.book_slug == q.c.book_slug,
+                BookPriceModel.date == q.c.date
             )
-        ).filter(BookPrice.book_slug == book_slug)
+        ).filter(BookPriceModel.book_slug == book_slug)
         return q.all()
     return _get_all_prices(db, book_slug).all()
 
 
 @decorators.check_slug_book
-def create_book_prices(db: Session, book_slug: str, price: schemas.Prices):
-    if not _is_shop(db, price.shop_id):
-        raise HTTPException(status_code=404, detail=f'shop id:{price.shop_id} not found')
+def create_book_prices(db: Session, book_slug: str, price: schemas.PriceIn):
+    if not _is_shop_by_id(db, price.shop_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'shop id:{price.shop_id} not found')
 
-    db_price = BookPrice(**price.dict())
+    db_price = BookPriceModel(**price.dict())
     db.add(db_price)
     db.commit()
 
-    return price
+    return db_price
 
 
-def _is_shop(db: Session, shop_id: int):
-    q = db.query(Shop).filter(Shop.id == shop_id)
-    return db.query(q.exists())
+def create_shop(db: Session, shop: schemas.ShopIn):
+    if _is_shop_by_name(db, shop.name):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'shop already created')
+    db_shop = ShopModel(**shop.dict())
+    db.add(db_shop)
+    db.commit()
+    return db_shop
+
+
+def get_shops(db: Session):
+    return db.query(ShopModel).all()
+
+
+@decorators.check_slug_book
+def create_shop_book(db: Session, book_slug: str, shop_book: schemas.ShopBookIn):
+    if not _is_shop_by_id(db, shop_book.shop_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'shop id: {shop_book.shop_id} not found')
+
+    if _is_shop_book(db, book_slug, shop_book.shop_id):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'relation already created')
+
+    _shop_book = shop_book.dict()
+    _shop_book['book_slug'] = book_slug
+    db_shop_book = ShopBooksModel(**_shop_book)
+    db.add(db_shop_book)
+    db.commit()
+
+    return db_shop_book
+
+
+@decorators.check_slug_book
+def get_shop_books(db: Session, book_slug):
+    q = db.query(ShopBooksModel).filter(ShopBooksModel.book_slug == book_slug)
+    return q.all()
 
 
 def _get_all_prices(db: Session, book_slug):
-    return db.query(BookPrice).filter(BookPrice.book_slug == book_slug)
+    return db.query(BookPriceModel).filter(BookPriceModel.book_slug == book_slug)
+
+
+def _is_shop_by_id(db: Session, shop_id: int):
+    q = db.query(ShopModel).filter(ShopModel.id == shop_id).exists()
+    return db.query(q).scalar()
+
+
+def _is_shop_by_name(db: Session, shop_name: str):
+    q = db.query(ShopModel).filter(ShopModel.name == shop_name).exists()
+    return db.query(q).scalar()
+
+
+def _is_shop_book(db: Session, book_slug, shop_id):
+    q = db.query(ShopBooksModel).filter(
+        and_(
+            ShopBooksModel.book_slug == book_slug,
+            ShopBooksModel.shop_id == shop_id)
+    ).exists()
+
+    return db.query(q).scalar()
