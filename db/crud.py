@@ -88,7 +88,6 @@ def create_shop_book(db: Session, book_slug: str, shop_book: schemas.ShopBookIn)
     db_shop_book = ShopBooksModel(**_shop_book)
     db.add(db_shop_book)
     db.commit()
-    print(db_shop_book)
 
     return db_shop_book
 

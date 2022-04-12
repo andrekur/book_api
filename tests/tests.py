@@ -1,3 +1,5 @@
+import random
+
 from .base import BaseAPITest
 from .data import shop_data, book_data, shop_book_data
 from fastapi import status
@@ -80,15 +82,7 @@ class BookTest(BaseAPITest):
 
 class ShopBookTest(BaseAPITest):
     def test_create_one_shop_book(self):
-        _shop_book_data = copy.deepcopy(shop_book_data)
-        response = self.create_shop(shop_data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        _shop_book_data['shop_id'] = dict(response.json()).get('id')
-
-        response = self.create_book(book_data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        book_slug = dict(response.json()).get('slug')
-        _shop_book_data['book_slug'] = book_slug
+        book_slug, _shop_book_data = self._create_shop_book(book_data, shop_data, shop_book_data)
 
         response = self.create_shop_books(book_slug, _shop_book_data)
         _shop_book_data['id'] = dict(response.json()).get('id')
@@ -100,13 +94,70 @@ class ShopBookTest(BaseAPITest):
         self.assertEqual(response.json(), [_shop_book_data])
 
     def test_create_many_shop_books(self):
-        pass
+        _data = []
+
+        response = self.create_book(book_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        for i in range(1, 5):
+            response = self.create_shop(shop_data)
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            shop_book_data['shop_id'] = dict(response.json()).get('id')
+
+            response = self.create_shop_books(book_data['slug'], shop_book_data)
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            _data.append(response.json())
+            shop_data['name'] = 'shop_name_'.join(str(i))
+
+        response = self.get_shop_books(book_data['slug'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), _data)
 
     def test_create_duplicat_shop_books(self):
-        pass
+        book_slug, _shop_book_data = self._create_shop_book(book_data, shop_data, shop_book_data)
 
-    def test_create_error(self):
-        pass
+        response = self.create_shop_books(book_slug, _shop_book_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.create_shop_books(book_slug, _shop_book_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        error_detail = {'detail': 'relation already created'}
+        self.assertEqual(response.json(), error_detail)
+
+    def test_create_shop_book_without_book(self):
+        response = self.create_shop(shop_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        shop_book_data['shop_id'] = dict(response.json()).get('id')
+        fake_slug = 'fake_slug'
+        response = self.create_shop_books(fake_slug, shop_book_data)
+        error_detail = {'detail': 'book not found'}
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.json(), error_detail)
+
+    def test_create_shop_book_without_shop(self):
+        response = self.create_book(book_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        shop_book_data['shop_id'] = random.randint(1, 120000)
+        book_slug = dict(response.json()).get('slug')
+        response = self.create_shop_books(book_slug, shop_book_data)
+        error_detail = {'detail': f'shop id: {shop_book_data["shop_id"]} not found'}
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.json(), error_detail)
+
+    def _create_shop_book(self, b_data, s_data, s_b_data):
+        _shop_book_data = copy.deepcopy(s_b_data)
+        response = self.create_shop(s_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        _shop_book_data['shop_id'] = dict(response.json()).get('id')
+
+        response = self.create_book(b_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        book_slug = dict(response.json()).get('slug')
+        _shop_book_data['book_slug'] = book_slug
+
+        return [book_slug, _shop_book_data]
 
 
 if __name__ == '__main__':
