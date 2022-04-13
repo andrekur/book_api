@@ -38,4 +38,3 @@ class BookPriceModel(Base):
     shop_id = Column(Integer, ForeignKey('shops.id'), index=True, nullable=False)
     book_slug = Column(String, ForeignKey('books.slug'), index=True, nullable=False)
     date = Column(DateTime)
-

@@ -61,7 +61,7 @@ class BookTest(BaseAPITest):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), [book_data, ])
-        
+
         response = self.get_book_info(book_data['slug'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), book_data)
@@ -90,7 +90,10 @@ class BookTest(BaseAPITest):
 
 class ShopBookTest(BaseAPITest):
     def test_create_one_shop_book(self):
-        book_slug, _shop_book_data = self._create_shop_and_book(book_data, shop_data, shop_book_data)
+        book_slug, _shop_book_data = self._create_shop_and_book(
+            book_data,
+            shop_data,
+            shop_book_data)
 
         response = self.create_shop_books(book_slug, _shop_book_data)
         _shop_book_data['id'] = dict(response.json()).get('id')
@@ -114,7 +117,8 @@ class ShopBookTest(BaseAPITest):
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
             _shop_book_data['shop_id'] = dict(response.json()).get('id')
 
-            response = self.create_shop_books(book_data['slug'], _shop_book_data)
+            response = self.create_shop_books(book_data['slug'],
+                                              _shop_book_data)
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
             _data.append(response.json())
             _shop_data['name'] = 'shop_name_'.join(str(i))
@@ -124,7 +128,9 @@ class ShopBookTest(BaseAPITest):
         self.assertEqual(response.json(), _data)
 
     def test_create_duplicat_shop_books(self):
-        book_slug, _shop_book_data = self._create_shop_and_book(book_data, shop_data, shop_book_data)
+        book_slug, _shop_book_data = self._create_shop_and_book(book_data,
+                                                                shop_data,
+                                                                shop_book_data)
 
         response = self.create_shop_books(book_slug, _shop_book_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -154,7 +160,9 @@ class ShopBookTest(BaseAPITest):
         _shop_book_data['shop_id'] = random.randint(1, 120000)
         book_slug = dict(response.json()).get('slug')
         response = self.create_shop_books(book_slug, _shop_book_data)
-        error_detail = {'detail': f'shop id: {_shop_book_data["shop_id"]} not found'}
+        error_detail = {
+            'detail': f'shop id: {_shop_book_data["shop_id"]} not found'
+        }
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.json(), error_detail)
 
@@ -201,7 +209,7 @@ class PricesTest(BaseAPITest):
         response = self.create_shop(_shop_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         _price_data['shop_id'] = dict(response.json()).get('id')
-        
+
         for i in range(1, 5):
             response = self.create_price(book_slug, _price_data)
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -216,7 +224,7 @@ class PricesTest(BaseAPITest):
         response = self.get_prices(book_slug)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), _ret_data)
-        
+
         params = {'last_prices': True}
         response = self.get_prices_last(book_slug, params)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

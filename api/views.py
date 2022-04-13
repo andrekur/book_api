@@ -31,7 +31,8 @@ def get_db():
     status_code=status.HTTP_200_OK,
     response_model=List[PriceOut]
 )
-def get_book_prices(book_slug: str, db: Session = Depends(get_db), last_prices: bool = False):
+def get_book_prices(book_slug: str, db: Session = Depends(get_db),
+                    last_prices: bool = False):
     return crud.get_book_prices(db, book_slug, last_prices)
 
 
@@ -40,7 +41,8 @@ def get_book_prices(book_slug: str, db: Session = Depends(get_db), last_prices: 
     status_code=201,
     response_model=PriceOut
 )
-def create_book_price(book_slug: str, price: PriceIn, db: Session = Depends(get_db)):
+def create_book_price(book_slug: str, price: PriceIn,
+                      db: Session = Depends(get_db)):
     return crud.create_book_prices(db, book_slug, price)
 
 
@@ -49,7 +51,8 @@ def create_book_price(book_slug: str, price: PriceIn, db: Session = Depends(get_
     status_code=201,
     response_model=ShopBookOut
 )
-def create_shop_book(book_slug: str, shop_book: ShopBookIn, db: Session = Depends(get_db)):
+def create_shop_book(book_slug: str, shop_book: ShopBookIn,
+                     db: Session = Depends(get_db)):
     return crud.create_shop_book(db, book_slug, shop_book)
 
 
@@ -85,7 +88,8 @@ def get_books(db: Session = Depends(get_db)):
     status_code=status.HTTP_201_CREATED,
     response_model=BookOut
 )
-def create_book(book: BookIn, db: Session = Depends(get_db), parser: bool = False):
+def create_book(book: BookIn, db: Session = Depends(get_db),
+                parser: bool = False):
     if parser:
         tasks.create_book.delay(book.name)
         return book

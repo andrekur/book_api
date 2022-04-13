@@ -12,7 +12,9 @@ SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(autocommit=False,
+                                   autoflush=False,
+                                   bind=engine)
 
 
 def override_get_db():
@@ -54,7 +56,7 @@ class BaseAPITest(TestCase):
             '/books',
             json={**book_data}
         )
-    
+
     def get_book_info(self, book_slug):
         return self.client.get(
             f'/books/{book_slug}'
@@ -69,13 +71,13 @@ class BaseAPITest(TestCase):
         return self.client.get(
             f'/books/{book_slug}/prices',
         )
-    
+
     def create_price(self, book_slug, price_data):
         return self.client.post(
             f'/books/{book_slug}/prices',
             json={**price_data}
         )
-    
+
     def get_prices_last(self, book_url, params):
         return self.client.get(
             f'/books/{book_url}/prices',

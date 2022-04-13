@@ -1,4 +1,4 @@
-from .models import BookModel, ShopModel
+from .models import BookModel
 from fastapi import HTTPException
 
 

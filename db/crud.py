@@ -47,13 +47,15 @@ def get_book_prices(db: Session, book_slug, last_prices):
             )
         ).filter(BookPriceModel.book_slug == book_slug)
         return q.all()
-    return _get_all_prices(db, book_slug).all()
+    return _get_all_prices(db, book_slug)
 
 
 @decorators.check_slug_book
-def create_book_prices(db: Session, book_slug: str, price: schemas.PriceIn):
+def create_book_prices(db: Session, book_slug: str,
+                       price: schemas.PriceIn):
     if not _is_shop_by_id(db, price.shop_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'shop id:{price.shop_id} not found')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'shop id:{price.shop_id} not found')
     _price = price.dict()
     _price['book_slug'] = book_slug
     db_price = BookPriceModel(**_price)
@@ -65,7 +67,8 @@ def create_book_prices(db: Session, book_slug: str, price: schemas.PriceIn):
 
 def create_shop(db: Session, shop: schemas.ShopIn):
     if _is_shop_by_name(db, shop.name):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'shop already created')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='shop already created')
     db_shop = ShopModel(**shop.dict())
     db.add(db_shop)
     db.commit()
@@ -77,12 +80,15 @@ def get_shops(db: Session):
 
 
 @decorators.check_slug_book
-def create_shop_book(db: Session, book_slug: str, shop_book: schemas.ShopBookIn):
+def create_shop_book(db: Session, book_slug: str,
+                     shop_book: schemas.ShopBookIn):
     if not _is_shop_by_id(db, shop_book.shop_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'shop id: {shop_book.shop_id} not found')
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'shop id: {shop_book.shop_id} not found')
 
     if _is_shop_book(db, book_slug, shop_book.shop_id):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'relation already created')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='relation already created')
 
     _shop_book = shop_book.dict()
     _shop_book['book_slug'] = book_slug
@@ -100,7 +106,8 @@ def get_shop_books(db: Session, book_slug):
 
 
 def _get_all_prices(db: Session, book_slug):
-    return db.query(BookPriceModel).filter(BookPriceModel.book_slug == book_slug)
+    q = db.query(BookPriceModel).filter(BookPriceModel.book_slug == book_slug)
+    return q.all()
 
 
 def _is_shop_by_id(db: Session, shop_id: int):

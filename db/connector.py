@@ -8,7 +8,8 @@ HOST = 'localhost'
 PORT = 5433
 DB = 'api_dev'
 
-engine = create_engine(f'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}')
+engine = create_engine(
+    f'postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB}')
 
 Session = sessionmaker(autocommit=False, autoflush=True, bind=engine)
 
