@@ -38,7 +38,7 @@ def get_book_prices(book_slug: str, db: Session = Depends(get_db), last_prices: 
 @app.post(
     '/books/{book_slug}/prices',
     status_code=201,
-    response_model=PriceIn
+    response_model=PriceOut
 )
 def create_book_price(book_slug: str, price: PriceIn, db: Session = Depends(get_db)):
     return crud.create_book_prices(db, book_slug, price)
@@ -109,4 +109,4 @@ def create_shop(shop: ShopIn, db: Session = Depends(get_db)):
 def get_shops(db: Session = Depends(get_db)):
     return crud.get_shops(db)
 
-# TODO PUT REQUESTS Shops, Book
+# TODO: PUT REQUESTS Shops, Book, Prices

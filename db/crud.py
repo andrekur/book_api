@@ -54,8 +54,9 @@ def get_book_prices(db: Session, book_slug, last_prices):
 def create_book_prices(db: Session, book_slug: str, price: schemas.PriceIn):
     if not _is_shop_by_id(db, price.shop_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'shop id:{price.shop_id} not found')
-
-    db_price = BookPriceModel(**price.dict())
+    _price = price.dict()
+    _price['book_slug'] = book_slug
+    db_price = BookPriceModel(**_price)
     db.add(db_price)
     db.commit()
 

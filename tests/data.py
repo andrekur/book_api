@@ -1,3 +1,5 @@
+from datetime import datetime as dt
+
 shop_data = {
     'name': 'test_name'
 }
@@ -12,4 +14,10 @@ book_data = {
 
 shop_book_data = {
     'url': 'is url'
+}
+
+price_data = {
+    'price': 12222,
+    'discount_price': 1222,
+    'date': str(dt.today())
 }

@@ -54,10 +54,32 @@ class BaseAPITest(TestCase):
             '/books',
             json={**book_data}
         )
+    
+    def get_book_info(self, book_slug):
+        return self.client.get(
+            f'/books/{book_slug}'
+        )
 
     def get_books(self):
         return self.client.get(
             '/books',
+        )
+
+    def get_prices(self, book_slug):
+        return self.client.get(
+            f'/books/{book_slug}/prices',
+        )
+    
+    def create_price(self, book_slug, price_data):
+        return self.client.post(
+            f'/books/{book_slug}/prices',
+            json={**price_data}
+        )
+    
+    def get_prices_last(self, book_url, params):
+        return self.client.get(
+            f'/books/{book_url}/prices',
+            params={**params},
         )
 
     def get_shop_books(self, book_slug):
