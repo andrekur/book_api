@@ -231,5 +231,59 @@ class PricesTest(BaseAPITest):
         self.assertEqual(response.json(), [_ret_data[-1], ])
 
 
+class ParserTest(BaseAPITest):
+    def test_create_one_book(self):
+        _book_parser_data = copy.deepcopy(book_data)
+
+        response = self.create_shop(shop_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        _shop_book_data = copy.deepcopy(shop_book_data)
+        _shop_book_data['shop_id'] = dict(response.json()).get('id')
+        _book_parser_data['shop_info'] = _shop_book_data
+
+        response = self.create_book_parser(_book_parser_data)
+        _book_parser_data['shop_info']['id'] = dict(
+            response.json()).get('shop_info').get('id')
+        _book_parser_data['shop_info']['book_slug'] = _book_parser_data['slug']
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json(), _book_parser_data)
+        
+        response = self.get_book_info(_book_parser_data['slug'])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), book_data)
+    
+    def test_create_book_no_shop(self):
+        _book_parser_data = copy.deepcopy(book_data)
+
+        _shop_book_data = copy.deepcopy(shop_book_data)
+        _shop_book_data['shop_id'] = random.randint(0, 12)
+        _book_parser_data['shop_info'] = _shop_book_data
+
+        response = self.create_book_parser(_book_parser_data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        error_detail = {
+            'detail': 'shop not found'
+        }
+        self.assertEqual(response.json(), error_detail)
+        
+    def test_create_book_already_created(self):
+        _book_parser_data = copy.deepcopy(book_data)
+        response = self.create_shop(shop_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        _shop_book_data = copy.deepcopy(shop_book_data)
+        _shop_book_data['shop_id'] = dict(response.json()).get('id')
+        _book_parser_data['shop_info'] = _shop_book_data
+
+        response = self.create_book(book_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.create_book_parser(_book_parser_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        error_detail = {
+            'detail': 'book already created'
+        }
+        self.assertEqual(response.json(), error_detail)
+        
 if __name__ == '__main__':
     unittest.main()

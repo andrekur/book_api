@@ -105,6 +105,32 @@ def get_shop_books(db: Session, book_slug):
     return q.all()
 
 
+def create_book_parser(db: Session, book):
+
+    if _is_book(db, book.slug):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail='book already created')
+
+    if not _is_shop_by_id(db, book.shop_info.shop_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='shop not found')
+    _ret = None
+    _book = book.dict()
+    _shop_info = _book.pop('shop_info')
+    _shop_info['book_slug'] = book.slug
+
+    db_book = BookModel(**_book)
+    db_shop_info = ShopBooksModel(**_shop_info)
+    db.add(db_book)
+    db.add(db_shop_info)
+    db.commit()
+
+    _ret = schemas.BookOut.from_orm(db_book).dict()
+    _ret['shop_info'] = schemas.ShopBookOut.from_orm(db_shop_info).dict()
+
+    return _ret
+
+
 def _get_all_prices(db: Session, book_slug):
     q = db.query(BookPriceModel).filter(BookPriceModel.book_slug == book_slug)
     return q.all()
@@ -127,4 +153,9 @@ def _is_shop_book(db: Session, book_slug, shop_id):
             ShopBooksModel.shop_id == shop_id)
     ).exists()
 
+    return db.query(q).scalar()
+
+
+def _is_book(db, book_slug):
+    q = db.query(BookModel).filter(BookModel.slug == book_slug).exists()
     return db.query(q).scalar()

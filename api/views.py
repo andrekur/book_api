@@ -9,7 +9,9 @@ from db.schemas import (
     ShopIn,
     ShopOut,
     ShopBookIn,
-    ShopBookOut
+    ShopBookOut,
+    ParserBookIn,
+    ParserBookOut
 )
 from db.connector import Session
 from db import crud
@@ -88,11 +90,7 @@ def get_books(db: Session = Depends(get_db)):
     status_code=status.HTTP_201_CREATED,
     response_model=BookOut
 )
-def create_book(book: BookIn, db: Session = Depends(get_db),
-                parser: bool = False):
-    if parser:
-        tasks.create_book.delay(book.name)
-        return book
+def create_book(book: BookIn, db: Session = Depends(get_db)):
     return crud.create_book(db, book)
 
 
@@ -113,4 +111,12 @@ def create_shop(shop: ShopIn, db: Session = Depends(get_db)):
 def get_shops(db: Session = Depends(get_db)):
     return crud.get_shops(db)
 
+
+@app.post(
+    '/systems/parser',
+    status_code=status.HTTP_201_CREATED,
+    response_model=ParserBookOut
+)
+def create_book_parser(book: ParserBookIn, db: Session = Depends(get_db)):
+    return crud.create_book_parser(db, book)
 # TODO: PUT REQUESTS Shops, Book, Prices

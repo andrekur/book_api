@@ -75,3 +75,11 @@ class PriceIn(_BasePrice):
 
 class PriceOut(_BasePrice):
     id: int
+
+
+class ParserBookIn(_BookBase):
+    shop_info: ShopBookIn
+
+
+class ParserBookOut(BookOut):
+    shop_info: ShopBookOut

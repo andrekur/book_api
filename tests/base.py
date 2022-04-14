@@ -94,3 +94,9 @@ class BaseAPITest(TestCase):
             f'/books/{book_slug}/urls',
             json={**shop_book_data}
         )
+
+    def create_book_parser(self, book_parser):
+        return self.client.post(
+            '/systems/parser',
+            json={**book_parser}
+        )
