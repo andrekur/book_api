@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, UniqueConstraint
 
 from .connector import Base
 
@@ -22,6 +22,11 @@ class ShopModel(Base):
 
 class ShopBooksModel(Base):
     __tablename__ = 'shops_books'
+    __table_args__ = (
+        UniqueConstraint(
+            'shop_id', 'book_slug'
+        ),
+    )
 
     id = Column(Integer, primary_key=True)
     shop_id = Column(Integer, ForeignKey('shops.id'), index=True, nullable=False)
@@ -31,6 +36,11 @@ class ShopBooksModel(Base):
 
 class BookPriceModel(Base):
     __tablename__ = 'books_prices'
+    __table_args__ = (
+        UniqueConstraint(
+            'shop_id', 'book_slug', 'date'
+        ),
+    )
 
     id = Column(Integer, primary_key=True)
     price = Column(Integer)
