@@ -111,13 +111,17 @@ def create_book_parser(db: Session, book):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail='book already created')
 
-    if not _is_shop_by_id(db, book.shop_info.shop_id):
+    if not _is_shop_by_name(db, book.shop_info.shop_name):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail='shop not found')
     _ret = None
     _book = book.dict()
     _shop_info = _book.pop('shop_info')
     _shop_info['book_slug'] = book.slug
+
+    shop_name = _shop_info.pop('shop_name')
+    shop = db.query(ShopModel).filter(ShopModel.name == shop_name).first()
+    _shop_info['shop_id'] = shop.id
 
     db_book = BookModel(**_book)
     db_shop_info = ShopBooksModel(**_shop_info)

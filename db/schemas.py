@@ -77,8 +77,13 @@ class PriceOut(_BasePrice):
     id: int
 
 
+class _ParserShopBook(BaseModel):
+    shop_name: str
+    url: str
+
+
 class ParserBookIn(_BookBase):
-    shop_info: ShopBookIn
+    shop_info: _ParserShopBook
 
 
 class ParserBookOut(BookOut):

@@ -238,17 +238,21 @@ class ParserTest(BaseAPITest):
         response = self.create_shop(shop_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         _shop_book_data = copy.deepcopy(shop_book_data)
-        _shop_book_data['shop_id'] = dict(response.json()).get('id')
+        _shop_book_data['shop_name'] = dict(response.json()).get('name')
         _book_parser_data['shop_info'] = _shop_book_data
+        shop_id = dict(response.json()).get('id')
 
         response = self.create_book_parser(_book_parser_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         _book_parser_data['shop_info']['id'] = dict(
             response.json()).get('shop_info').get('id')
+        _ = _book_parser_data['shop_info'].pop('shop_name')
         _book_parser_data['shop_info']['book_slug'] = _book_parser_data['slug']
+        _book_parser_data['shop_info']['shop_id'] = shop_id
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.json(), _book_parser_data)
-        
+
         response = self.get_book_info(_book_parser_data['slug'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), book_data)
@@ -257,7 +261,7 @@ class ParserTest(BaseAPITest):
         _book_parser_data = copy.deepcopy(book_data)
 
         _shop_book_data = copy.deepcopy(shop_book_data)
-        _shop_book_data['shop_id'] = random.randint(0, 12)
+        _shop_book_data['shop_name'] = str([chr(random.randint(1, 10)) for _ in range(10)])
         _book_parser_data['shop_info'] = _shop_book_data
 
         response = self.create_book_parser(_book_parser_data)
@@ -272,7 +276,7 @@ class ParserTest(BaseAPITest):
         response = self.create_shop(shop_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         _shop_book_data = copy.deepcopy(shop_book_data)
-        _shop_book_data['shop_id'] = dict(response.json()).get('id')
+        _shop_book_data['shop_name'] = dict(response.json()).get('name')
         _book_parser_data['shop_info'] = _shop_book_data
 
         response = self.create_book(book_data)
@@ -284,6 +288,7 @@ class ParserTest(BaseAPITest):
             'detail': 'book already created'
         }
         self.assertEqual(response.json(), error_detail)
-        
+
+
 if __name__ == '__main__':
     unittest.main()
