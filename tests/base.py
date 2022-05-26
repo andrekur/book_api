@@ -1,4 +1,5 @@
 from unittest import TestCase
+from os import remove
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -7,10 +8,12 @@ from db.models import Base
 from api.api_start import app
 from api.views import get_db
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+TEST_DB_PATH = './tests/test.db'
+
+SQLALCHEMY_DATABASE_URL = F'sqlite:///{TEST_DB_PATH}'
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL, connect_args={'check_same_thread''': False}
 )
 TestingSessionLocal = sessionmaker(autocommit=False,
                                    autoflush=False,
@@ -36,8 +39,8 @@ class BaseAPITest(TestCase):
 
     @classmethod
     def tearDown(cls):
-        Base.metadata.drop_all(bind=engine)
-        # del test BD
+        # remove test db
+        remove(TEST_DB_PATH)
 
     def create_shop(self, shop_data):
         # hardcoding url is wrong ¯\_(ツ)_/¯
