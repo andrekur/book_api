@@ -19,5 +19,4 @@ shop_book_data = {
 price_data = {
     'price': 12222,
     'discount_price': 1222,
-    'date': str(dt.today())
 }
