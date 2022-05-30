@@ -27,11 +27,11 @@ def check_shop(func):
     Декоратор для проверки магазина по name, id
     """
     def wrapper(db, *args, shop_id=None, shop_name=None, **kwargs):
-        if shop_id:
+        if shop_id is not None:
             if not _is_shop_by_id(db, shop_id):
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                     detail=f'shop id:{shop_id} not found')
-        elif shop_name:
+        elif shop_name is not None:
             if not _is_shop_by_name(db, shop_name):
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                     detail=f'shop name:{shop_name} not found')

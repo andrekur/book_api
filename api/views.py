@@ -118,4 +118,4 @@ def get_shops(db: Session = Depends(get_db)):
 )
 def create_book_parser(book: ParserBookIn):
     create_or_upd_book.delay(book.dict())
-# TODO: PUT REQUESTS Shops, Book, Prices
+# TODO PUT REQUESTS Shops, Book, Prices

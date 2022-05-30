@@ -60,7 +60,7 @@ class ShopBookOut(_BaseShopBook):
 
 class _BasePrice(BaseModel):
     price: int
-    discount_price: int
+    discount: int
 
     class Config:
         orm_mode = True
