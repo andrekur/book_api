@@ -30,8 +30,12 @@ services:
     build:
       context: ../
       dockerfile: _CI/Dockerfile
+      args:
+        - HTTP_PROXY=${HTTP_PROXY}
     volumes:
       - logs_data:/app/logs
+    environment:
+      - HTTP_PROXY=${HTTP_PROXY}
     depends_on:
       - db
     command: ./entrypoint.sh
