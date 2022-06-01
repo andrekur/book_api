@@ -16,7 +16,7 @@ from db.schemas import (
 from db.connector import Session
 from db import crud
 
-from . import tasks
+from .tasks import create_or_upd_book
 from .api_start import app
 
 
@@ -35,7 +35,7 @@ def get_db():
 )
 def get_book_prices(book_slug: str, db: Session = Depends(get_db),
                     last_prices: bool = False):
-    return crud.get_book_prices(db, book_slug, last_prices)
+    return crud.get_book_prices(db, last_prices, book_slug=book_slug)
 
 
 @app.post(
@@ -45,7 +45,7 @@ def get_book_prices(book_slug: str, db: Session = Depends(get_db),
 )
 def create_book_price(book_slug: str, price: PriceIn,
                       db: Session = Depends(get_db)):
-    return crud.create_book_prices(db, book_slug, price)
+    return crud.create_book_prices(db, price, book_slug=book_slug, shop_id=price.shop_id)
 
 
 @app.post(
@@ -55,7 +55,7 @@ def create_book_price(book_slug: str, price: PriceIn,
 )
 def create_shop_book(book_slug: str, shop_book: ShopBookIn,
                      db: Session = Depends(get_db)):
-    return crud.create_shop_book(db, book_slug, shop_book)
+    return crud.create_shop_book(db, shop_book, book_slug=book_slug, shop_id=shop_book.shop_id)
 
 
 @app.get(
@@ -64,7 +64,7 @@ def create_shop_book(book_slug: str, shop_book: ShopBookIn,
     response_model=List[ShopBookOut]
 )
 def get_shop_books(book_slug: str, db: Session = Depends(get_db)):
-    return crud.get_shop_books(db, book_slug)
+    return crud.get_shop_books(db, book_slug=book_slug)
 
 
 @app.get(
@@ -73,7 +73,7 @@ def get_shop_books(book_slug: str, db: Session = Depends(get_db)):
     response_model=BookOut
 )
 def get_book(book_slug: str, db: Session = Depends(get_db)):
-    return crud.get_book(db, book_slug)
+    return crud.get_book(db, book_slug=book_slug)
 
 
 @app.get(
@@ -114,9 +114,8 @@ def get_shops(db: Session = Depends(get_db)):
 
 @app.post(
     '/systems/parser',
-    status_code=status.HTTP_201_CREATED,
-    response_model=ParserBookOut
+    status_code=status.HTTP_200_OK,
 )
-def create_book_parser(book: ParserBookIn, db: Session = Depends(get_db)):
-    return crud.create_book_parser(db, book)
-# TODO: PUT REQUESTS Shops, Book, Prices
+def create_book_parser(book: ParserBookIn):
+    create_or_upd_book.delay(book.dict())
+# TODO PUT REQUESTS Shops, Book, Prices

@@ -1,6 +1,9 @@
 import uvicorn
 from api.api_start import app
+from dotenv import dotenv_values
+
+CONFIG = dotenv_values('_CI/.env')
 
 
 if __name__ == '__main__':
-    uvicorn.run(app, host='192.168.0.77', port=3200, debug=True)
+    uvicorn.run(app, host=CONFIG['SERVER_HOST'], port=int(CONFIG['SERVER_PORT']), debug=True)

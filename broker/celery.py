@@ -1,14 +1,21 @@
 from celery import Celery
-# TODO ADD ENV FILE
+from dotenv import dotenv_values
 
-PROTOCOL = 'amqp'
-USER = 'test_user'
-PASSWD = 'test_password'
-HOST = 'localhost'
-PORT = '5672'
+CONFIG = dotenv_values('_CI/.env')
+
+
+PROTOCOL = CONFIG['CELERY_PROTOCOL']
+USER = CONFIG['CELERY_USER']
+PASSWD = CONFIG['CELERY_PASSWD']
+HOST = CONFIG['CELERY_HOST']
+PORT = CONFIG['CELERY_PORT']
 
 broker_url = f'{PROTOCOL}://{USER}:{PASSWD}@{HOST}:{PORT}/'
 
-app = Celery('tasks', broker_url=broker_url, include=['api.tasks'])
+app = Celery(
+    'tasks',
+    broker_url=broker_url,
+    include=['api.tasks'],
+)
 
 app.autodiscover_tasks()

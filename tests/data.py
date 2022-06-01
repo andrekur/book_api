@@ -1,5 +1,3 @@
-from datetime import datetime as dt
-
 shop_data = {
     'name': 'test_name'
 }
@@ -18,6 +16,5 @@ shop_book_data = {
 
 price_data = {
     'price': 12222,
-    'discount_price': 1222,
-    'date': str(dt.today())
+    'discount': 1222,
 }

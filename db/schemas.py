@@ -59,26 +59,35 @@ class ShopBookOut(_BaseShopBook):
 
 
 class _BasePrice(BaseModel):
-
     price: int
-    discount_price: int
-    shop_id: int
-    date: datetime
+    discount: int
 
     class Config:
         orm_mode = True
 
 
 class PriceIn(_BasePrice):
+    shop_id: int
     pass
 
 
 class PriceOut(_BasePrice):
     id: int
+    date: datetime
+    shop_id: int
+
+
+class _ParserShopBook(BaseModel):
+    shop_name: str
+    url: str
+
+    class Config:
+        orm_mode = True
 
 
 class ParserBookIn(_BookBase):
-    shop_info: ShopBookIn
+    shop_info: _ParserShopBook
+    price_info: _BasePrice = None
 
 
 class ParserBookOut(BookOut):
