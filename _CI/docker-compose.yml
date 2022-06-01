@@ -13,6 +13,8 @@ services:
       - POSTGRES_DB=${DB_NAME_DB}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
+    networks:
+      - rabbitmq_network
   nginx:
     image: nginx:${NGINX_TAG}
     container_name: nginx_book_app
@@ -21,9 +23,25 @@ services:
     volumes:
       - ./nginx/:/etc/nginx/templates/
     environment:
-      - SERVER_PORT=${SERVER_PORT}
+      - SERVER_PORT=${API_SERVER_PORT}
     depends_on:
       - web
+    networks:
+      - rabbitmq_network
+  rabbitmq:
+    restart: always
+    container_name: broker_book_api
+    image: ${BROKER_TAG}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_log:/var/log/rabbitmq/
+    environment:
+      - RABBITMQ_DEFAULT_USER=${BROKER_USER}
+      - RABBITMQ_DEFAULT_PASS=${BROKER_PASSWORD}
+    ports:
+      - ${BROKER_PORT_IN}:${BROKER_PORT_OUT}
+    networks:
+      - rabbitmq_network
   web:
     restart: always
     container_name: web_book_app
@@ -34,12 +52,19 @@ services:
         - HTTP_PROXY=${HTTP_PROXY}
     volumes:
       - logs_data:/app/logs
-    environment:
-      - HTTP_PROXY=${HTTP_PROXY}
     depends_on:
       - db
+      - rabbitmq
     command: ./entrypoint.sh
+    networks:
+      - rabbitmq_network
 
 volumes:
   postgres_data:
   logs_data:
+  rabbitmq_data:
+  rabbitmq_log:
+
+networks:
+  rabbitmq_network:
+    driver: bridge
