@@ -7,7 +7,7 @@ mv env.example .env
 sudo docker-compose build
 sudo docker-compose up
 ```
-после проверьте адресс localhost:80/docs
+после проверьте адрес localhost:80/docs
 ## Ссылки в продукте
 
 book_slug - это isbn книги
